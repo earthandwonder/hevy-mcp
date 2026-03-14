@@ -65,13 +65,26 @@ hevy_mcp/
 
 ## Deployment
 
-Includes a `Dockerfile` for container deployment (e.g. Railway). The server reads `PORT` from the environment and exposes a `/health_check` endpoint.
+### Docker (any platform)
+
+Includes a `Dockerfile` for container deployment. The server reads `PORT` from the environment and exposes a `/health_check` endpoint.
 
 ```bash
-# Railway sets PORT automatically
 docker build -t hevy-mcp .
 docker run -e HEVY_API_KEY=your_key -e PORT=8080 hevy-mcp
 ```
+
+### Railway
+
+This project is set up for one-click deployment on [Railway](https://railway.com). See [`RAILWAY_DEPLOY.md`](RAILWAY_DEPLOY.md) for the full step-by-step playbook covering:
+
+1. Creating the Railway project
+2. Deploying the Docker container
+3. Setting environment variables (`HEVY_API_KEY`, `ENVIRONMENT`)
+4. Generating a public domain
+5. Verifying the deployment (health check + MCP handshake)
+
+The playbook documents the exact Railway MCP tool calls and parameters, so it can be followed manually or used as a reference for building an automated deployment skill with the [Railway MCP server](https://docs.railway.com/guides/mcp).
 
 ## Development
 
