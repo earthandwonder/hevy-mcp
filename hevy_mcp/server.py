@@ -4,7 +4,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 PORT = int(os.environ.get("PORT", 8000))
 
-mcp = FastMCP("Hevy MCP", host="0.0.0.0", port=PORT)
+mcp = FastMCP("Hevy MCP")
 
 
 # ---------------------------------------------------------------------------
@@ -281,7 +281,6 @@ async def create_workout(
     title: str = Field(description="Title for the workout"),
     start_time: str = Field(description="ISO 8601 start time (e.g. 2024-01-15T10:00:00Z)"),
     end_time: str = Field(description="ISO 8601 end time (e.g. 2024-01-15T11:00:00Z)"),
-    description: str = Field(default="", description="Optional workout description"),
     exercises: list[dict] = Field(
         description=(
             "List of exercises. Each dict needs: exercise_template_id (str), "
@@ -289,6 +288,7 @@ async def create_workout(
             "optional: notes (str), superset_id (int)"
         )
     ),
+    description: str = Field(default="", description="Optional workout description"),
 ) -> ActionResult:
     """Log a new workout."""
     payload = {
@@ -314,7 +314,6 @@ async def update_workout(
     title: str = Field(description="Updated title"),
     start_time: str = Field(description="ISO 8601 start time"),
     end_time: str = Field(description="ISO 8601 end time"),
-    description: str = Field(default="", description="Optional workout description"),
     exercises: list[dict] = Field(
         description=(
             "Updated list of exercises. Each dict needs: exercise_template_id (str), "
@@ -322,6 +321,7 @@ async def update_workout(
             "optional: notes (str), superset_id (int)"
         )
     ),
+    description: str = Field(default="", description="Optional workout description"),
 ) -> ActionResult:
     """Update an existing workout."""
     payload = {
@@ -343,7 +343,6 @@ async def update_workout(
 @mcp.tool()
 async def create_routine(
     title: str = Field(description="Title for the routine"),
-    folder_id: int | None = Field(default=None, description="Optional folder ID"),
     exercises: list[dict] = Field(
         description=(
             "List of exercises. Each dict needs: exercise_template_id (str), "
@@ -351,6 +350,7 @@ async def create_routine(
             "optional: notes (str), superset_id (int)"
         )
     ),
+    folder_id: int | None = Field(default=None, description="Optional folder ID"),
 ) -> ActionResult:
     """Create a new routine."""
     payload = {
@@ -372,7 +372,6 @@ async def create_routine(
 async def update_routine(
     routine_id: str = Field(description="ID of the routine to update"),
     title: str = Field(description="Updated title"),
-    folder_id: int | None = Field(default=None, description="Optional folder ID"),
     exercises: list[dict] = Field(
         description=(
             "Updated list of exercises. Each dict needs: exercise_template_id (str), "
@@ -380,6 +379,7 @@ async def update_routine(
             "optional: notes (str), superset_id (int)"
         )
     ),
+    folder_id: int | None = Field(default=None, description="Optional folder ID"),
 ) -> ActionResult:
     """Update an existing routine."""
     payload = {
@@ -403,7 +403,7 @@ async def update_routine(
 
 def main():
     load_dotenv()
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="http", host="0.0.0.0", port=PORT)
 
 
 if __name__ == "__main__":
