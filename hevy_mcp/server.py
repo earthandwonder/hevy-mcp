@@ -132,18 +132,19 @@ def _build_exercise_payload(exercises: list[dict]) -> list[dict]:
         entry = {
             "exercise_template_id": ex["exercise_template_id"],
             "superset_id": ex.get("superset_id"),
+            "rest_seconds": ex.get("rest_seconds", 0),
             "notes": ex.get("notes", ""),
             "sets": [],
         }
         for s in ex.get("sets", []):
             entry["sets"].append(
                 {
-                    "type": s.get("type", "normal"),
+                    "type": s.get("type", s.get("set_type", "normal")),
                     "weight_kg": s.get("weight_kg"),
                     "reps": s.get("reps"),
                     "distance_meters": s.get("distance_meters"),
                     "duration_seconds": s.get("duration_seconds"),
-                    "rpe": s.get("rpe"),
+                    "custom_metric": s.get("custom_metric"),
                 }
             )
         result.append(entry)
@@ -347,7 +348,7 @@ async def create_routine(
         description=(
             "List of exercises. Each dict needs: exercise_template_id (str), "
             "sets (list of dicts with type, weight_kg, reps, etc.), "
-            "optional: notes (str), superset_id (int)"
+            "optional: notes (str), superset_id (int), rest_seconds (int)"
         )
     ),
     folder_id: int | None = Field(default=None, description="Optional folder ID"),

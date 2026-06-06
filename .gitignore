@@ -34,6 +34,7 @@ ENV/
 # Environment
 .env
 .env.local
+local.env
 
 # Testing
 .pytest_cache/

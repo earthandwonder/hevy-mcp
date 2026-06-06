@@ -36,7 +36,13 @@ class HevyClient:
                 headers={**self._headers(), "Content-Type": "application/json"},
                 json=json,
             )
-            resp.raise_for_status()
+            if not resp.is_success:
+                detail = resp.text
+                raise httpx.HTTPStatusError(
+                    f"HTTP {resp.status_code} for {resp.url}: {detail}",
+                    request=resp.request,
+                    response=resp,
+                )
         return resp.json()
 
     async def put(self, path: str, json: dict | None = None) -> dict:
@@ -47,7 +53,13 @@ class HevyClient:
                 headers={**self._headers(), "Content-Type": "application/json"},
                 json=json,
             )
-            resp.raise_for_status()
+            if not resp.is_success:
+                detail = resp.text
+                raise httpx.HTTPStatusError(
+                    f"HTTP {resp.status_code} for {resp.url}: {detail}",
+                    request=resp.request,
+                    response=resp,
+                )
         return resp.json()
 
     async def get_paginated(self, path: str, params: dict | None = None) -> list[dict]:
