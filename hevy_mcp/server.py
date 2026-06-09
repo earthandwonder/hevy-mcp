@@ -87,12 +87,6 @@ class ExerciseTemplate(BaseModel):
     is_custom: bool
 
 
-class ExerciseTemplateList(BaseModel):
-    templates: list[ExerciseTemplate]
-    page: int
-    page_count: int
-
-
 class ActionResult(BaseModel):
     success: bool
     message: str
@@ -197,7 +191,7 @@ async def get_workout(
 ) -> WorkoutDetail:
     """Get full details of a specific workout."""
     data = await hevy_client.get(f"/workouts/{workout_id}")
-    w = data
+    w = data.get("workout", data)
     return WorkoutDetail(
         id=w["id"],
         title=w.get("title", ""),
@@ -243,33 +237,22 @@ async def get_routine(
 @mcp.tool()
 async def search_exercises(
     query: str = Field(description="Search query for exercise templates"),
-    page: int = Field(default=1, description="Page number (1-indexed)"),
-) -> ExerciseTemplateList:
-    """Search exercise templates by name."""
-    data = await hevy_client.get(
-        "/exercise_templates",
-        params={"page": page, "pageSize": 10},
-    )
-    # Filter locally since Hevy API doesn't have a search param
-    templates = []
+) -> list[ExerciseTemplate]:
+    """Search exercise templates by name. Fetches all pages and filters client-side."""
+    all_templates = await hevy_client.get_paginated("/exercise_templates", params={"pageSize": 100})
     query_lower = query.lower()
-    for t in data.get("exercise_templates", []):
-        if query_lower in t.get("title", "").lower():
-            templates.append(
-                ExerciseTemplate(
-                    id=t["id"],
-                    title=t["title"],
-                    type=t.get("type", ""),
-                    primary_muscle_group=t.get("primary_muscle_group", ""),
-                    secondary_muscle_groups=t.get("secondary_muscle_groups", []),
-                    is_custom=t.get("is_custom", False),
-                )
-            )
-    return ExerciseTemplateList(
-        templates=templates,
-        page=data.get("page", page),
-        page_count=data.get("page_count", 1),
-    )
+    return [
+        ExerciseTemplate(
+            id=t["id"],
+            title=t["title"],
+            type=t.get("type", ""),
+            primary_muscle_group=t.get("primary_muscle_group", ""),
+            secondary_muscle_groups=t.get("secondary_muscle_groups", []),
+            is_custom=t.get("is_custom", False),
+        )
+        for t in all_templates
+        if query_lower in t.get("title", "").lower()
+    ]
 
 
 # ---------------------------------------------------------------------------
