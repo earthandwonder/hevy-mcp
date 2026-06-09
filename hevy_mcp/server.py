@@ -231,7 +231,7 @@ async def get_routine(
 ) -> RoutineDetail:
     """Get full details of a specific routine."""
     data = await hevy_client.get(f"/routines/{routine_id}")
-    r = data
+    r = data.get("routine", data)
     return RoutineDetail(
         id=r["id"],
         title=r.get("title", ""),
