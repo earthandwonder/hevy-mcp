@@ -1,5 +1,18 @@
 # CLAUDE.md
 
+
+<!-- CODEAGENTSWARM PROJECT CONFIG START - DO NOT EDIT -->
+
+## Project Configuration
+
+**Project Name**: hevy-mcp-server
+
+_This project name is used for task organization in CodeAgentSwarm. All tasks created in this directory will be associated with this project._
+
+_For complete CodeAgentSwarm instructions, see the global CLAUDE.md file at ~/.claude/CLAUDE.md_
+
+<!-- CODEAGENTSWARM PROJECT CONFIG END -->
+
 This file provides guidance to Claude Code when working with this repository.
 
 ## Overview
@@ -37,4 +50,4 @@ Only need `HEVY_API_KEY` — get from Hevy app settings (requires Hevy Pro).
 
 ## Deployment
 
-Deployed on Railway via Docker. Railway provides `PORT` env var dynamically.
+Hosted on Prefect (https://horizon.prefect.io/).
