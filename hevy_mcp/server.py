@@ -119,19 +119,25 @@ def _parse_exercise(e: dict, idx: int) -> Exercise:
     )
 
 
+def _strip_none(d: dict) -> dict:
+    """Remove keys with None or empty-string values from a dict."""
+    return {k: v for k, v in d.items() if v is not None and v != ""}
+
+
 def _build_exercise_payload(exercises: list[dict]) -> list[dict]:
     """Convert user-provided exercise dicts to Hevy API format."""
     result = []
     for ex in exercises:
-        entry = {
-            "exercise_template_id": ex["exercise_template_id"],
-            "superset_id": ex.get("superset_id"),
-            "rest_seconds": ex.get("rest_seconds", 0),
-            "notes": ex.get("notes", ""),
-            "sets": [],
-        }
-        for s in ex.get("sets", []):
-            entry["sets"].append(
+        entry = _strip_none(
+            {
+                "exercise_template_id": ex["exercise_template_id"],
+                "superset_id": ex.get("superset_id"),
+                "rest_seconds": ex.get("rest_seconds", 0),
+                "notes": ex.get("notes"),
+            }
+        )
+        entry["sets"] = [
+            _strip_none(
                 {
                     "type": s.get("type", s.get("set_type", "normal")),
                     "weight_kg": s.get("weight_kg"),
@@ -141,6 +147,8 @@ def _build_exercise_payload(exercises: list[dict]) -> list[dict]:
                     "custom_metric": s.get("custom_metric"),
                 }
             )
+            for s in ex.get("sets", [])
+        ]
         result.append(entry)
     return result
 
@@ -337,13 +345,10 @@ async def create_routine(
     folder_id: int | None = Field(default=None, description="Optional folder ID"),
 ) -> ActionResult:
     """Create a new routine."""
-    payload = {
-        "routine": {
-            "title": title,
-            "folder_id": folder_id,
-            "exercises": _build_exercise_payload(exercises),
-        }
-    }
+    routine = {"title": title, "exercises": _build_exercise_payload(exercises)}
+    if folder_id is not None:
+        routine["folder_id"] = folder_id
+    payload = {"routine": routine}
     try:
         data = await hevy_client.post("/routines", json=payload)
         routine_id = data.get("id", "unknown")
@@ -366,13 +371,10 @@ async def update_routine(
     folder_id: int | None = Field(default=None, description="Optional folder ID"),
 ) -> ActionResult:
     """Update an existing routine."""
-    payload = {
-        "routine": {
-            "title": title,
-            "folder_id": folder_id,
-            "exercises": _build_exercise_payload(exercises),
-        }
-    }
+    routine = {"title": title, "exercises": _build_exercise_payload(exercises)}
+    if folder_id is not None:
+        routine["folder_id"] = folder_id
+    payload = {"routine": routine}
     try:
         await hevy_client.put(f"/routines/{routine_id}", json=payload)
         return ActionResult(success=True, message=f"Routine {routine_id} updated")
